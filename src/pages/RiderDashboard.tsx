@@ -24,6 +24,7 @@ interface IRider {
 const RiderDashboard = () => {
   const { user } = useAppData();
   const { socket } = useSocket();
+  console.log("Socket in RiderDashboard:", socket);
 
   const [profile, setProfile] = useState<IRider | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,9 +56,18 @@ const RiderDashboard = () => {
   };
 
   useEffect(() => {
-    if (!socket) return;
+    console.log("Listener effect running");
+  console.log("Socket value:", socket);
+
+  if (!socket) {
+    console.log("Socket is null");
+    return;
+  }
+
+  console.log("Registering order:available listener");
 
     const onOrderAvailable = ({ orderId }: { orderId: string }) => {
+      console.log("🔥 ORDER EVENT RECEIVED", orderId);
       setIncomingOrders((prev) =>
         prev.includes(orderId) ? prev : [...prev, orderId]
       );
@@ -73,6 +83,8 @@ const RiderDashboard = () => {
     };
 
     socket.on("order:available", onOrderAvailable);
+
+    
 
     return () => {
       socket.off("order:available", onOrderAvailable);
