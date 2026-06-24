@@ -1,7 +1,8 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "leaflet-routing-machine";
+/*import "leaflet-routing-machine";*/
+import "leaflet-routing-machine/dist/leaflet-routing-machine.js";
 import { useEffect } from "react";
 
 declare module "leaflet" {
@@ -23,7 +24,7 @@ const deliveryIcon = new L.DivIcon({
   className: "",
 });
 
-const Routing = ({
+/*const Routing = ({
   from,
   to,
 }: {
@@ -49,6 +50,49 @@ const Routing = ({
 
     return () => {
       map.removeControl(control);
+    };
+  }, [from, to, map]);
+
+  return null;
+};*/
+
+const Routing = ({
+  from,
+  to,
+}: {
+  from: [number, number];
+  to: [number, number];
+}) => {
+  const map = useMap();
+
+  useEffect(() => {
+    const RoutingLib = (L as any).Routing;
+
+    if (!RoutingLib) {
+      console.error("Leaflet Routing Machine not loaded");
+      return;
+    }
+
+    const control = RoutingLib.control({
+      waypoints: [L.latLng(from), L.latLng(to)],
+      lineOptions: {
+        styles: [{ color: "#E23744", weight: 5 }],
+      },
+      addWaypoints: false,
+      draggableWaypoints: false,
+      show: false,
+      createMarker: () => null,
+      router: RoutingLib.osrmv1({
+        serviceUrl: "https://router.project-osrm.org/route/v1",
+      }),
+    }).addTo(map);
+
+    return () => {
+      try {
+        map.removeControl(control);
+      } catch (err) {
+        console.log(err);
+      }
     };
   }, [from, to, map]);
 
